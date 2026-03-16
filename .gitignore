@@ -1,1 +1,5 @@
-.wav
+*.wav
+*.m4a
+*.txt
+*.env
+.DS_Store
