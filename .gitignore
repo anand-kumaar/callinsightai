@@ -6,3 +6,4 @@
 *.docx
 *.db
 settings.json
+*.ipynb
