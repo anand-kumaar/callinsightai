@@ -3,3 +3,6 @@
 *.txt
 *.env
 .DS_Store
+*.docx
+*.db
+settings.json
