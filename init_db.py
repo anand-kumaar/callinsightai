@@ -11,8 +11,10 @@ with engine.connect() as conn:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             pair_index INTEGER,
             timestamp DATETIME,
-            agent_transcript TEXT,
-            customer_transcript TEXT
+            transcript TEXT,
+            speaker TEXT,        
+            call_duration REAL,
+            is_paired BOOLEAN              
         )
     '''))
     conn.commit()
