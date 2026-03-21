@@ -6,3 +6,5 @@
 *.docx
 *.db
 settings.json
+__pycache__/
+*.ipynb
