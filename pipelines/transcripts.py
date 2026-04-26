@@ -11,7 +11,7 @@ def load_model(model_size="base")->whisper.Whisper:
     model=whisper.load_model(model_size,device)
     return model
 
-def transcribe_audio(model:whisper.Whisper,audio_sample:Union[str,object])->str:
+def transcribe_audio(model:whisper.Whisper,audio_sample:Union[str,object])->dict:
     '''
     Transcribes audio to text using Whisper Model
     Args:
@@ -19,14 +19,9 @@ def transcribe_audio(model:whisper.Whisper,audio_sample:Union[str,object])->str:
     audio_sample(str-Path of the Audio File or HF Audio decoder Object)
 
     Returns:
-    String : Transcription Only
+    dict : whisper output containing transcription and other data
     '''
-    if isinstance(audio_sample,str):
-        result=model.transcribe(audio=audio_sample,fp16=False)
-    else:
-        audio_file=audio_sample.get_all_samples()
-        audio_array,original_sr = audio_file.data[0].numpy(),audio_file.sample_rate
-        audio_resampled = librosa.resample(audio_array, orig_sr=original_sr, target_sr=16000)
-        result = model.transcribe(audio_resampled, fp16=False)
+
+    result=model.transcribe(audio=str(audio_sample),fp16=False)
     
-    return result['text']
+    return result

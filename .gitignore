@@ -8,3 +8,6 @@
 settings.json
 __pycache__/
 *.ipynb
+Temp_Files/
+*.zip
+.claude/

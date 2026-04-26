@@ -36,4 +36,6 @@ def insert_row(conversation_id:int,timestamp:datetime.datetime,transcript:str,sp
     except Exception as e:
         print(f"Error Inserting Row :{e}")
         return False
+    
+#def update_table()
 
