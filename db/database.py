@@ -37,5 +37,28 @@ def insert_row(conversation_id:int,timestamp:datetime.datetime,transcript:str,sp
         print(f"Error Inserting Row :{e}")
         return False
     
-#def update_table()
+def update_speaker(id: int, speaker: str):
+   try:
+    with engine.connect() as conn:
+            conn.execute(text('''
+                UPDATE conversations 
+                SET speaker = :speaker 
+                WHERE id = :id
+            '''), {'speaker': speaker, 'id': id})
+            conn.commit()
+            return True
+   except Exception as e:
+       print(f"Error Updating Speaker:{e}")
+       return False
+
+
+def get_rows_without_speaker():
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(
+                text('SELECT id, transcript FROM conversations WHERE speaker = ""'))
+            return result.fetchall()
+    except Exception as e:
+        print(f"error fetching rows : {e}")
+        return False
 
