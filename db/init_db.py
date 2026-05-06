@@ -21,4 +21,19 @@ def initialise_db():
             )
         '''))
         conn.commit()
+        print("Conversations Table Created")
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS analysis (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                transcript_id INTEGER NOT NULL,
+                speaker TEXT,
+                mood TEXT,
+                mood_score REAL,
+                keywords TEXT,
+                FOREIGN KEY (transcript_id) REFERENCES conversations(id)
+            )
+        """))
+        conn.commit()
+    print("Analysis table ready.")
+
     

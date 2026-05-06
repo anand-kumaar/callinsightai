@@ -62,3 +62,89 @@ def get_rows_without_speaker():
         print(f"error fetching rows : {e}")
         return False
 
+def get_all_conversations():
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(
+                text('SELECT * FROM conversations '))
+            return result.fetchall()
+    except Exception as e:
+        print(f"error fetching rows : {e}")
+        return False
+
+def insert_row_analysis(transcript_id:int,speaker:str,mood:str,mood_score:float,keywords:str):
+    '''
+    Inserts a row in the database table analysis
+    Args:
+    id: Primary Key for identifying rows in the table
+    transcript_id(int): Column ID from the transcript table
+    speaker: Column Speaker from the transcript table
+    mood: Mood of the speaker based upon analysis by a NLP Model
+    mood_score: Score assigned to the analysed mood
+    keywords: keywords associated with the transcript
+    '''
+    try:
+        with engine.connect() as conn:
+            conn.execute(text('''
+                INSERT INTO analysis (transcript_id,speaker,mood,mood_score,keywords)
+                VALUES (:transcript_id,:speaker,:mood,:mood_score,:keywords)
+            '''), {
+                'transcript_id': transcript_id,
+                'speaker': speaker,
+                'mood': mood,
+                'mood_score':mood_score,
+                'keywords':keywords
+            })
+            conn.commit()
+            return True
+    except Exception as e:
+        print(f"Error Inserting Row :{e}")
+        return False
+
+def get_unanalysed_rows():
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text('''
+                SELECT c.id, c.transcript, c.speaker 
+                FROM conversations c
+                LEFT JOIN analysis a ON a.transcript_id = c.id
+                WHERE a.transcript_id IS NULL
+            '''))
+            return result.fetchall()
+    except Exception as e:
+        print(f"Error fetching unanalysed rows: {e}")
+        return False
+    
+def get_conversation_stats():
+    with engine.connect() as conn:
+        result=conn.execute(text('''
+            SELECT COUNT(*) as total_calls,AVG(call_duration) as avg_duration
+                                 FROM conversations'''))
+        return result.fetchone()
+
+
+def get_analysis_stats():
+    with engine.connect() as conn:
+        mood_result=conn.execute(text('''
+                SELECT mood,COUNT(*) as mood_count,AVG(mood_score) as avg_score
+                                 FROM analysis
+                                 GROUP BY mood
+                                 ORDER BY mood_count DESC'''))
+        keyword_result=conn.execute(text('''
+                SELECT keywords from ANALYSIS'''))
+        return {'mood':mood_result.fetchall(),'keywords':keyword_result.fetchall()}
+    
+
+def update_conversation_id(id: int, conv_id: int):
+    try:
+        with engine.connect() as conn:
+            conn.execute(text('''
+                UPDATE conversations 
+                SET conversation_id = :conv_id 
+                WHERE id = :id
+            '''), {'conv_id': conv_id, 'id': id})
+            conn.commit()
+            return True
+    except Exception as e:
+       print(f"Error Updating conversation_id:{e}")
+       return False
