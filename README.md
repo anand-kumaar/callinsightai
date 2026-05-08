@@ -4,7 +4,7 @@ An end-to-end call centre analytics dashboard that transcribes,
 classifies and analyses call recordings using AI.
 
 ## Features
-- Audio transcription using OpenAI Whisper
+- Audio transcription using OpenAI Whisper. Dataset can be either a zip file or a HF dataset
 - Speaker classification (agent vs customer)
 - Mood and keyword analysis using Gemini API
 - Interactive Streamlit dashboard
@@ -29,8 +29,8 @@ classifies and analyses call recordings using AI.
 ## Screenshots
 
 ![Upload zip or HF dataset](screenshots/upload.png)
-![Conversation Viewer](screenshots/conv_viewer.png)
 ![Mood Distribution](screenshots/dashboard.png)
+![Conversation Viewer](screenshots/conv_viewer.png)
 
 ## Known Limitations
 - Speaker classifier accuracy depends on call opening phrases
