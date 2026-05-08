@@ -148,3 +148,27 @@ def update_conversation_id(id: int, conv_id: int):
     except Exception as e:
        print(f"Error Updating conversation_id:{e}")
        return False
+
+def get_conversation_by_id(conv_id: int):
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text('''
+                SELECT c.transcript, c.speaker, c.conversation_id, a.mood, a.mood_score, a.keywords 
+                FROM conversations c
+                INNER JOIN analysis a ON a.transcript_id = c.id
+                WHERE c.conversation_id = :conv_id
+            '''), {'conv_id': conv_id})
+            return result.fetchall()
+    except Exception as e:
+        print(f"Error fetching conversation_id:{conv_id}. {e}")
+        return False
+
+def get_distinct_conv_id():
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text('''
+                SELECT DISTINCT conversation_id from conversations'''))
+            return result.fetchall()
+    except Exception as e:
+        print(f"Error fetching distinct conversation ids {e}")
+        return False 

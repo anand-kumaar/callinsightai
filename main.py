@@ -18,9 +18,11 @@ Maybe. we will decide that later. Lets be done with the code first
 
 def identify_speaker(classifier:object,transcript:str)->Literal["Customer","Agent"]:
    result=classifier(transcript[:100],candidate_labels=[
-    "call centre representative greeting and helping or selling",
-    "customer calling with a problem or question"
+    "customer care executive being thankful for calling",
+    "customer calling requesting assistance"
 ])
+   print(result['labels'])
+   print(result['scores'])
    return result['labels'][0]   
 
 def update_conversation_ids():
@@ -56,7 +58,7 @@ def run_classifier_pipeline(classifier):
      rows=get_rows_without_speaker()
      for row in rows:
           speaker_detail=identify_speaker(classifier,row.transcript)
-          speaker ="agent" if speaker_detail=="call centre representative greeting and helping or selling" else "customer"
+          speaker ="agent" if speaker_detail=="customer care executive being thankful for calling" else "customer"
           update_speaker(id=row.id,speaker=speaker)
              
 def run_analysis_pipeline():
@@ -98,7 +100,9 @@ def run_pipeline(data_source):
 
 
 if __name__ == "__main__":
-    run_analysis_pipeline()
+    classifier=pipeline("zero-shot-classification",model="typeform/mobilebert-uncased-mnli",truncation=True,max_length=256)
+    run_classifier_pipeline(classifier)
+    
         
         
 

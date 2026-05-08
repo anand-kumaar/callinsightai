@@ -1,7 +1,7 @@
 import streamlit as st
 from pathlib import Path
 from main import run_pipeline
-from db.database import get_analysis_stats,get_conversation_stats
+from db.database import get_analysis_stats,get_conversation_stats,get_distinct_conv_id, get_conversation_by_id
 import plotly.express as px
 import json
 from collections import Counter
@@ -62,3 +62,28 @@ kw_data = {"keyword": [k[0] for k in keyword_counts],
            "count": [k[1] for k in keyword_counts]}
 fig2 = px.bar(kw_data, x="keyword", y="count")
 st.plotly_chart(fig2)
+
+
+
+st.subheader("Conversation Viewer")
+
+conv_ids = get_distinct_conv_id()
+selected = st.selectbox("Select Conversation", [row.conversation_id for row in conv_ids])
+
+if selected is not None:
+    rows = get_conversation_by_id(selected)
+    col1, col2 = st.columns(2)
+    print(rows)   
+    for row in rows:
+        if row.speaker == "agent":
+            with col1:
+                st.markdown("**Agent**")
+                st.write(row.transcript)
+                st.caption(f"Mood: {row.mood} | Score: {row.mood_score:.2f}")
+                st.caption(f"Keywords: {', '.join(json.loads(row.keywords))}")
+        else:
+            with col2:
+                st.markdown("**Customer**")
+                st.write(row.transcript)
+                st.caption(f"Mood: {row.mood} | Score: {row.mood_score:.2f}")
+                st.caption(f"Keywords: {', '.join(json.loads(row.keywords))}")
