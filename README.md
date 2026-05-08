@@ -19,9 +19,11 @@ classifies and analyses call recordings using AI.
 1. Clone the repo
 2. Create conda environment:
    conda env create -f environment.yml
-3. Add GEMINI_API_KEY to .env file:
+3. Add GEMINI_API_KEY  to .env file:
    GEMINI_API_KEY=your_key_here
-4. Run the app:
+   Adding HF API Key if your dataset is on HF.
+   HF_TOKEN=
+5. Run the app:
    streamlit run app.py
 
 ## Screenshots
