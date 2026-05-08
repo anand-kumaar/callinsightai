@@ -1,6 +1,5 @@
 *.wav
 *.m4a
-*.txt
 *.env
 .DS_Store
 *.docx

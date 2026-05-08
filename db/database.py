@@ -115,24 +115,49 @@ def get_unanalysed_rows():
         print(f"Error fetching unanalysed rows: {e}")
         return False
     
-def get_conversation_stats():
-    with engine.connect() as conn:
-        result=conn.execute(text('''
-            SELECT COUNT(*) as total_calls,AVG(call_duration) as avg_duration
-                                 FROM conversations'''))
-        return result.fetchone()
+def get_conversation_stats(start_date=None, end_date=None):
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text('''
+                SELECT COUNT(*) as total_calls, AVG(call_duration) as avg_duration
+                FROM conversations
+                WHERE (:start_date IS NULL OR DATE(timestamp) >= :start_date)
+                AND (:end_date IS NULL OR DATE(timestamp) <= :end_date)
+            '''), {'start_date': start_date, 'end_date': end_date})
+            return result.fetchone()
+    except Exception as e:
+        print(f"Error fetching conversation stats: {e}")
+        return False
 
 
-def get_analysis_stats():
-    with engine.connect() as conn:
-        mood_result=conn.execute(text('''
-                SELECT mood,COUNT(*) as mood_count,AVG(mood_score) as avg_score
-                                 FROM analysis
-                                 GROUP BY mood
-                                 ORDER BY mood_count DESC'''))
-        keyword_result=conn.execute(text('''
-                SELECT keywords from ANALYSIS'''))
-        return {'mood':mood_result.fetchall(),'keywords':keyword_result.fetchall()}
+def get_analysis_stats(start_date=None, end_date=None):
+    try:
+        with engine.connect() as conn:
+            mood_result = conn.execute(text('''
+                SELECT a.mood, COUNT(*) as mood_count, AVG(a.mood_score) as avg_score
+                FROM analysis a
+                JOIN conversations c ON c.id = a.transcript_id
+                WHERE (:start_date IS NULL OR DATE(c.timestamp) >= :start_date)
+                AND (:end_date IS NULL OR DATE(c.timestamp) <= :end_date)
+                GROUP BY a.mood
+                ORDER BY mood_count DESC
+            '''), {'start_date': start_date, 'end_date': end_date})
+
+            keyword_result = conn.execute(text('''
+                SELECT a.keywords
+                FROM analysis a
+                JOIN conversations c ON c.id = a.transcript_id
+                WHERE (:start_date IS NULL OR DATE(c.timestamp) >= :start_date)
+                AND (:end_date IS NULL OR DATE(c.timestamp) <= :end_date)
+            '''), {'start_date': start_date, 'end_date': end_date})
+
+            return {
+                "mood": mood_result.fetchall(),
+                "keywords": keyword_result.fetchall()
+            }
+    except Exception as e:
+        print(f"Error fetching analysis stats: {e}")
+        return False
     
 
 def update_conversation_id(id: int, conv_id: int):
@@ -153,9 +178,9 @@ def get_conversation_by_id(conv_id: int):
     try:
         with engine.connect() as conn:
             result = conn.execute(text('''
-                SELECT c.transcript, c.speaker, c.conversation_id, a.mood, a.mood_score, a.keywords 
+                SELECT c.id, c.transcript, c.speaker, c.conversation_id, a.mood, a.mood_score, a.keywords 
                 FROM conversations c
-                INNER JOIN analysis a ON a.transcript_id = c.id
+                LEFT JOIN analysis a ON a.transcript_id = c.id
                 WHERE c.conversation_id = :conv_id
             '''), {'conv_id': conv_id})
             return result.fetchall()
@@ -163,12 +188,27 @@ def get_conversation_by_id(conv_id: int):
         print(f"Error fetching conversation_id:{conv_id}. {e}")
         return False
 
-def get_distinct_conv_id():
+def get_distinct_conv_id(start_date=None, end_date=None):
     try:
         with engine.connect() as conn:
             result = conn.execute(text('''
-                SELECT DISTINCT conversation_id from conversations'''))
+                SELECT DISTINCT conversation_id FROM conversations
+                WHERE (:start_date IS NULL OR DATE(timestamp) >= :start_date)
+                AND (:end_date IS NULL OR DATE(timestamp) <= :end_date)
+            '''), {'start_date': start_date, 'end_date': end_date})
             return result.fetchall()
     except Exception as e:
-        print(f"Error fetching distinct conversation ids {e}")
-        return False 
+        print(f"Error fetching distinct conversation ids: {e}")
+        return False
+
+def get_unpaired_conversations():
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text('''
+                SELECT * FROM conversations 
+                WHERE conversation_id = -1
+            '''))
+            return result.fetchall()
+    except Exception as e:
+        print(f"Error fetching unpaired conversations: {e}")
+        return False
